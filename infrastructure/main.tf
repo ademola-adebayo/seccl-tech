@@ -26,7 +26,7 @@ resource "aws_key_pair" "ssh-key" {
 
 resource "aws_vpc" "vpc" {
   cidr_block           = var.vpc_cidr
-  instance_tenancy = "default"
+  instance_tenancy     = "default"
   enable_dns_hostnames = true
   enable_dns_support   = true
 
@@ -97,23 +97,23 @@ resource "aws_route_table_association" "public-rta" {
 }
 
 resource "aws_instance" "webserver" {
-  ami           = data.aws_ami.latest-amazon-linux-image.id
+  ami                    = data.aws_ami.latest-amazon-linux-image.id
   instance_type          = var.instancetype
-  key_name                    = aws_key_pair.ssh-key.key_name
+  key_name               = aws_key_pair.ssh-key.key_name
   availability_zone      = "${var.region}a"
   monitoring             = true
   vpc_security_group_ids = [aws_security_group.webserver-sg.id]
   subnet_id              = aws_subnet.private_subnet.id
 
-  user_data         = <<EOF
+  user_data = <<EOF
                          #!/bin/bash
                          sudo yum update -y
                          sudo yum install -y httpd
                          sudo service httpd start
                          sudo service httpd enable
-                         "<body style='margin: 0 auto;padding: 20px 30px; background-color:#BB2020'> <h1 style='color: #BEC7C7;font-size: 20px;'>Hello World via Terraform</h1>
-                         <h3 style='color: #ECED0C'>Thanks for having me</h3>
-                         </body>" | sudo tee /var/www/html/index.html
+                         "<h1 style='color: #BEC7C7;font-size: 20px'>Hello World via Terraform</h1>
+                         " | sudo tee /var/www/html/index.html
+                         echo "<h3 style='color: #ECED0C'>Thanks for having me</h3>" >> /var/www/html
                        EOF
   tags = {
     Name        = "${var.environment}-webserver"
@@ -194,6 +194,6 @@ resource "aws_security_group" "webserver-sg" {
 /*ataching an eip to webserver instance*/
 resource "aws_eip" "private-eip" {
   instance = aws_instance.webserver.id
-  vpc = true
+  vpc      = true
 }
 
