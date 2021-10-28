@@ -111,8 +111,9 @@ resource "aws_instance" "webserver" {
                          sudo yum install -y httpd
                          sudo service httpd start
                          sudo service httpd enable
-                         echo "<h1>Hello World via Terraform</h1>" | sudo tee /var/www/html/index.html
-                         echo "<h3 style='color: purple'>Thanks for having me</h3>" >> /var/www/html/index.html
+                         "<body style='margin: 0 auto;padding: 20px 30px; background-color:#BB2020'> <h1 style='color: #BEC7C7;font-size: 20px;'>Hello World via Terraform</h1>
+                         <h3 style='color: #ECED0C'>Thanks for having me</h3>
+                         </body>" | sudo tee /var/www/html/index.html
                        EOF
   tags = {
     Name        = "${var.environment}-webserver"

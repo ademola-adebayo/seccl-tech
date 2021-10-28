@@ -20,7 +20,6 @@ resource "aws_security_group" "nlb-sg" {
 }
 
 
-
 resource "aws_security_group_rule" "ingress" { 
   for_each = var.ports
 
