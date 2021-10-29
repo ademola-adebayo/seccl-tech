@@ -10,13 +10,14 @@ resource "aws_nat_gateway" "nat-gw" {
 
 resource "aws_route_table" "private-rt" {
   vpc_id = aws_vpc.vpc.id
-  route {
+  /* route {
     cidr_block = "0.0.0.0/0"
     nat_gateway_id = aws_nat_gateway.nat-gw.id
-  }  
+  }   */
 
   tags = {
-    Name = "levelup-private"
+    Name        = "${var.environment}-private-route-table"
+    Environment = "${var.environment}"
   }
 }
 

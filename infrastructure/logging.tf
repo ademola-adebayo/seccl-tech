@@ -1,5 +1,4 @@
 # log_group
-
 resource "aws_cloudwatch_log_group" "sandbox-loggroup" {
 	name = "training-loggroup"
 }

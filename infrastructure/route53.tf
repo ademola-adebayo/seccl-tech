@@ -1,10 +1,6 @@
 resource "aws_route53_zone" "this" {
   name = "boxlittle.com"
 }
-/* resource "aws_route53_zone" "main" {
-  vpc_id = aws_vpc.vpc.id
-  name = "boxlittle.com"
-} */
 
 resource "aws_route53_record" "this" {
   name = "boxlittle.com"
