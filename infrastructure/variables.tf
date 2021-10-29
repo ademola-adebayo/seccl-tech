@@ -1,14 +1,5 @@
 variable "region" {}
 
-variable "bastion_ami" {
-  type = map(any)
-  default = {
-    us-east-1 = "ami-0e341fcaad89c3650"
-    us-east-2 = "ami-00d1ab6b335f217cf"
-    eu-west-1 = "ami-0dea0cf236484a796"
-  }
-}
-
 variable "ports" {
   type = map(number)
   default = {

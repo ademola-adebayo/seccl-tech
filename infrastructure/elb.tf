@@ -1,14 +1,9 @@
 # NLB Security Group
-resource "aws_security_group" "nlb-sg" {
+resource "aws_security_group" "web-nlb-sg" {
   name                       = "loadbalalancer-sg"
   description                = "Allow all traffic from internet"
   vpc_id                     = aws_vpc.vpc.id
-  /* ingress {
-    from_port                = 80
-    to_port                  = 80
-    protocol                 = "tcp"
-    cidr_blocks              = ["0.0.0.0/0"]
-  }*/
+  
   
   egress {
     from_port                = 0
@@ -23,7 +18,7 @@ resource "aws_security_group" "nlb-sg" {
 resource "aws_security_group_rule" "ingress" { 
   for_each = var.ports
 
-  security_group_id = aws_security_group.nlb-sg.id
+  security_group_id = aws_security_group.web-nlb-sg.id
   from_port = each.value
   to_port   = each.value
   protocol   = "tcp"
@@ -36,7 +31,7 @@ resource "aws_eip" "lb" {
 }
 
 resource "aws_lb" "this" {
-  name               = "lb-tf"
+  name               = "${var.environment}-web-lb"
   internal           = false
   load_balancer_type = "network"
   /* subnets            = [aws_subnet.public_subnet.id] */
@@ -82,6 +77,6 @@ resource "aws_lb_target_group_attachment" "this" {
 
   target_group_arn = aws_lb_target_group.this[each.key].arn
   target_id        = aws_instance.webserver.id
-  port             = 80
+  port             = each.value
 }
 

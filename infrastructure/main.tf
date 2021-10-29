@@ -20,7 +20,7 @@ data "aws_ami" "latest-amazon-linux-image" {
 
 
 resource "aws_key_pair" "ssh-key" {
-  key_name   = "dove-key"
+  key_name   = "${var.key_name}"
   public_key = file("${var.private_key_location}.pub")
 }
 
@@ -73,6 +73,12 @@ resource "aws_internet_gateway" "igw" {
   }
 }
 
+resource "aws_route" "public_internet_gateway" {
+  route_table_id = aws_route_table.public-rt.id
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id = aws_internet_gateway.igw.id
+}
+
 
 /* Routing table for public subnet */
 resource "aws_route_table" "public-rt" {
@@ -90,7 +96,7 @@ resource "aws_route_table" "public-rt" {
 }
 
 
-/* Route table associations */
+/* Public Route table associations */
 resource "aws_route_table_association" "public-rta" {
   subnet_id      = aws_subnet.public_subnet.id
   route_table_id = aws_route_table.public-rt.id
@@ -167,14 +173,14 @@ resource "aws_security_group" "webserver-sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["${var.hostip}"]
+    cidr_blocks = ["${var.vpc_cidr}"]
   }
 
   ingress {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["${var.vpc_cidr}"]
   }
 
 
