@@ -84,10 +84,10 @@ resource "aws_route" "public_internet_gateway" {
 resource "aws_route_table" "public-rt" {
   vpc_id = aws_vpc.vpc.id
 
-  /* route {
+  route {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.igw.id
-  } */
+  }
 
   tags = {
     Name        = "${var.environment}-public-route-table"
@@ -117,9 +117,17 @@ resource "aws_instance" "webserver" {
                          sudo yum install -y httpd
                          sudo service httpd start
                          sudo service httpd enable
-                         "<h1 style='color: #BEC7C7;font-size: 20px'>Hello World via Terraform</h1>
-                         " | sudo tee /var/www/html/index.html
-                         echo "<h3 style='color: #ECED0C'>Thanks for having me</h3>" >> /var/www/html
+                         AZ_ID=$(curl http://169.254.169.254/latest/meta-data/placement/availability-zone/)
+                         MAC_ADDRESS=$(curl http://169.254.169.254/latest/meta-data/mac/)
+                         IP_PRIVATE=$(curl http://169.254.169.254/latest/meta-data/local-ipv4/)
+                         IP_PUBLIC=$(curl http://169.254.169.254/latest/meta-data/public-ipv4/)
+                         EC2_INST_TYPE= $(curl http://169.254.169.254/latest/meta-data/instance-type/)
+                         AMI_ID=$(curl http://169.254.169.254/latest/meta-data/ami-id)
+                         PUBLIC_HOSTNAME=$(curl http://169.254.169.254/latest/meta-data/public-hostname)
+
+                         echo -e "<html><body><h1 style='color: #BEC7C7;font-size: 20px'>Hello World via Terraform</h1> \n<h3 style='color: #ECED0C'>Thanks for having me</h3> \n<h4> This is a EC2 instance of type $EC2_INST_TYPE \nlaunched with a private hostname $(hostname) \nlaunched from an AWS AMI od ID $AMI_ID \nThe instance has one ENI of MAC Address $MAC_ADDRESS \nlaunched in Amazon N Virginia Region in Availability Zone $AZ_ID \nwith a Private IPv4 $IP_PRIVATE \nand a Public IP (temp and change if stopped) of $IP_PUBLIC \nIt can be reached from the internet using the public hostname $PUBLIC_HOSTNAME</h4></body></html>" > /var/www/html/index.html
+
+                         echo -e "<h4>This is a EC2 instance of type $EC2_INST_TYPE \nlaunched with a private hostname $(hostname) \nlaunched from an AWS of ID $AMI_ID \nThe instance has one ENI of MAC Address $MAC_ADDRESS \nlaunched in Amazon N Virginia Region in Availability Zone $AZ_ID \nwith a Private IPv4 $IP_PRIVATE \nand a Public IP (temp and can change if stopped) of $IP_PUBLIC \nI\nI</h4>" >> /var/www/html/index.html
                        EOF
   tags = {
     Name        = "${var.environment}-webserver"
