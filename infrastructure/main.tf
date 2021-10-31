@@ -73,7 +73,6 @@ resource "aws_internet_gateway" "igw" {
   }
 }
 
-
 /* Routing table for public subnet */
 resource "aws_route_table" "public-rt" {
   vpc_id = aws_vpc.vpc.id
@@ -111,9 +110,9 @@ resource "aws_instance" "webserver" {
                          sudo yum install -y httpd
                          sudo service httpd start
                          sudo service httpd enable
-                         "<h1 style='color: #BEC7C7;font-size: 20px'>Hello World via Terraform</h1>
+                         echo "<h1 style='color: #BEC7C7;font-size: 20px'>Hello World via Terraform</h1>
                          " | sudo tee /var/www/html/index.html
-                         echo "<h3 style='color: #ECED0C'>Thanks for having me</h3>" >> /var/www/html
+                         echo "<h3 style='color: #ECED0C'>Thanks for having me</h3>" >> /var/www/html/index.html
                        EOF
   tags = {
     Name        = "${var.environment}-webserver"
