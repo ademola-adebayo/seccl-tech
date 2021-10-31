@@ -20,7 +20,7 @@ data "aws_ami" "latest-amazon-linux-image" {
 
 
 resource "aws_key_pair" "ssh-key" {
-  key_name   = "${var.key_name}"
+  key_name   = var.key_name
   public_key = file("${var.private_key_location}.pub")
 }
 
@@ -74,9 +74,9 @@ resource "aws_internet_gateway" "igw" {
 }
 
 resource "aws_route" "public_internet_gateway" {
-  route_table_id = aws_route_table.public-rt.id
+  route_table_id         = aws_route_table.public-rt.id
   destination_cidr_block = "0.0.0.0/0"
-  gateway_id = aws_internet_gateway.igw.id
+  gateway_id             = aws_internet_gateway.igw.id
 }
 
 
@@ -84,10 +84,10 @@ resource "aws_route" "public_internet_gateway" {
 resource "aws_route_table" "public-rt" {
   vpc_id = aws_vpc.vpc.id
 
-  route {
+  /* route {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.igw.id
-  }
+  } */
 
   tags = {
     Name        = "${var.environment}-public-route-table"
