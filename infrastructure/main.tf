@@ -73,21 +73,21 @@ resource "aws_internet_gateway" "igw" {
   }
 }
 
-resource "aws_route" "public_internet_gateway" {
+/* resource "aws_route" "public_internet_gateway" {
   route_table_id         = aws_route_table.public-rt.id
   destination_cidr_block = "0.0.0.0/0"
   gateway_id             = aws_internet_gateway.igw.id
-}
+} */
 
 
 /* Routing table for public subnet */
 resource "aws_route_table" "public-rt" {
   vpc_id = aws_vpc.vpc.id
 
-  /* route {
+  route {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.igw.id
-  } */
+  }
 
   tags = {
     Name        = "${var.environment}-public-route-table"
@@ -125,9 +125,9 @@ resource "aws_instance" "webserver" {
                          AMI_ID=$(curl http://169.254.169.254/latest/meta-data/ami-id)
                          PUBLIC_HOSTNAME=$(curl http://169.254.169.254/latest/meta-data/public-hostname)
 
-                         echo -e "<html><body><h1 style='color: #BEC7C7;font-size: 20px'>Hello World via Terraform</h1> \n<h3 style='color: #ECED0C'>Thanks for having me</h3> \n<h4> This is a EC2 instance of type $EC2_INST_TYPE \nlaunched with a private hostname $(hostname) \nlaunched from an AWS AMI od ID $AMI_ID \nThe instance has one ENI of MAC Address $MAC_ADDRESS \nlaunched in Amazon N Virginia Region in Availability Zone $AZ_ID \nwith a Private IPv4 $IP_PRIVATE \nand a Public IP (temp and change if stopped) of $IP_PUBLIC \nIt can be reached from the internet using the public hostname $PUBLIC_HOSTNAME</h4></body></html>" > /var/www/html/index.html
+                         echo -e "<html><body style='margin: 80px auto; padding: 20px 100px; background-color:#FF0005; '><h1 style='color: #BEC7C7;font-size: 20px'>Hello World via Terraform</h1> \n<h3 style='color: #ECED0C'>Thanks for having me</h3> \n<h4> This is a EC2 instance of type $EC2_INST_TYPE \nlaunched with a private hostname $(hostname) \nlaunched from an AWS AMI od ID $AMI_ID \nThe instance has one ENI of MAC Address $MAC_ADDRESS \nlaunched in Amazon N Virginia Region in Availability Zone $AZ_ID \nwith a Private IPv4 $IP_PRIVATE \nand a Public IP (temp and change if stopped) of $IP_PUBLIC \nIt can be reached from the internet using the public hostname $PUBLIC_HOSTNAME</h4></body></html>" > /var/www/html/index.html
 
-                         echo -e "<h4>This is a EC2 instance of type $EC2_INST_TYPE \nlaunched with a private hostname $(hostname) \nlaunched from an AWS of ID $AMI_ID \nThe instance has one ENI of MAC Address $MAC_ADDRESS \nlaunched in Amazon N Virginia Region in Availability Zone $AZ_ID \nwith a Private IPv4 $IP_PRIVATE \nand a Public IP (temp and can change if stopped) of $IP_PUBLIC \nI\nI</h4>" >> /var/www/html/index.html
+                         echo -e "<h4 style='color: #BEC7C7;'>This is a EC2 instance of type $EC2_INST_TYPE \nlaunched with a private hostname $(hostname) \nlaunched from an AWS of ID $AMI_ID \nThe instance has one ENI of MAC Address $MAC_ADDRESS \nlaunched in Amazon N Virginia Region in Availability Zone $AZ_ID \nwith a Private IPv4 $IP_PRIVATE \nand a Public IP (temp and can change if stopped) of $IP_PUBLIC \nI\nI</h4>" >> /var/www/html/index.html
                        EOF
   tags = {
     Name        = "${var.environment}-webserver"
@@ -171,28 +171,44 @@ resource "aws_cloudwatch_metric_alarm" "webserver" {
   }
 }
 
+/*Create Security Group for the Webserver instance*/
 resource "aws_security_group" "webserver-sg" {
   name        = "${var.environment}-web-server-sg"
   description = "Allow inbound traffic from NLB"
   vpc_id      = aws_vpc.vpc.id
 
-
+  # Created an inbound rule for SSH
   ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["${var.vpc_cidr}"]
+    description     = "SSH"
+    from_port       = 22
+    to_port         = 22
+    protocol        = "tcp"
+    security_groups = [aws_security_group.bastion-sg.id]
+    /*cidr_blocks = ["0.0.0.0/0"] second look priority*/
   }
 
+  # Created an inbound rule for ping
   ingress {
+    description = "Ping"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "ICMP"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # Created an inbound rule for Webserver access!
+  ingress {
+    description = "HTTP for webserver"
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    cidr_blocks = ["${var.vpc_cidr}"]
+    /* security_groups = [aws_security_group.web-nlb-sg.id] */
+    cidr_blocks = ["0.0.0.0/0"] /* second look priority */
   }
 
-
+  # Output Network Traffic for the Webserver
   egress {
+    description = "output from webserver"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
@@ -210,4 +226,3 @@ resource "aws_eip" "private-eip" {
   instance = aws_instance.webserver.id
   vpc      = true
 }
-

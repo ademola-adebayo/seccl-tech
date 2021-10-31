@@ -8,18 +8,12 @@ resource "aws_nat_gateway" "nat-gw" {
   depends_on  = [aws_internet_gateway.igw]
 }
 
-resource "aws_route" "privat-nat-gw" {
-  route_table_id = aws_route_table.private-rt.id
-  destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id = aws_nat_gateway.nat-gw.id
-}
-
 resource "aws_route_table" "private-rt" {
   vpc_id = aws_vpc.vpc.id
-  /* route {
+  route {
     cidr_block = "0.0.0.0/0"
     nat_gateway_id = aws_nat_gateway.nat-gw.id
-  }   */
+  }  
 
   tags = {
     Name        = "${var.environment}-private-route-table"
@@ -27,9 +21,14 @@ resource "aws_route_table" "private-rt" {
   }
 }
 
-
 # Private Route table associations
 resource "aws_route_table_association" "private-rta" {
   subnet_id = aws_subnet.private_subnet.id
   route_table_id = aws_route_table.private-rt.id
 }
+
+/* resource "aws_route" "privat-nat-gw" {
+  route_table_id = aws_route_table.private-rt.id
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id = aws_nat_gateway.nat-gw.id
+} */

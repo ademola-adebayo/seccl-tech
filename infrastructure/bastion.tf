@@ -8,7 +8,7 @@ resource "aws_security_group" "bastion-sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["${var.hostip}"]
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
@@ -19,9 +19,9 @@ resource "aws_security_group" "bastion-sg" {
   }
 
   ingress {
-    from_port   = 8
+    from_port   = 0
     to_port     = 0
-    protocol    = "icmp"
+    protocol    = "ICMP"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -44,4 +44,9 @@ resource "aws_instance" "bastion" {
     Name        = "${var.environment}-bastion"
     Environment = "${var.environment}"
   }
+}
+
+resource "aws_eip" "bastion-eip" {
+  instance = aws_instance.bastion.id
+  vpc      = true
 }

@@ -77,6 +77,6 @@ resource "aws_lb_target_group_attachment" "this" {
 
   target_group_arn = aws_lb_target_group.this[each.key].arn
   target_id        = aws_instance.webserver.id
-  port             = each.value
+  port             = each.value /*visit this asap*/
 }
 
